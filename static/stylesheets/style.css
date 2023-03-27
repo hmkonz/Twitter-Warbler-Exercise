@@ -515,6 +515,10 @@ p.card-bio {
   z-index: 1;
 }
 
+.messages-like {
+  z-index: 3;
+}
+
 .single-message {
   font-size: 27px;
   line-height: 32px;

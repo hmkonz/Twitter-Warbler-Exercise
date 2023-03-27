@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template, request, flash, redirect, session, g, abort
+from flask import Flask, render_template, request, flash, redirect, session, g, abort, url_for
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
@@ -232,32 +232,6 @@ def show_likes(user_id):
     return render_template('users/likes.html', user=user, likes=user.likes)
 
 
-@app.route ('/messages/<int:message_id>/like', methods=['POST'])
-def add_like(message_id):
-    """Toggle a liked message for the currently-logged-in user."""
-
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
-
-
-    liked_message = Message.query.get_or_404(message_id)
-    #user cannot like their own message
-    if liked_message.user_id == g.user.id:
-        return abort(403)
-
-    user_likes = g.user.likes
-
-    if liked_message in user_likes:
-        g.user.likes = [like for like in user_likes if like != liked_message]
-    else:
-        g.user.likes.append(liked_message)
-
-    db.session.commit()
-
-    return redirect("/")
-
-
 @app.route('/users/profile', methods=["GET", "POST"])
 def edit_profile():
     """Show a form to update profile for current user and process it."""
@@ -340,6 +314,35 @@ def messages_show(message_id):
 
     msg = Message.query.get(message_id)
     return render_template('messages/show.html', message=msg)
+
+
+@app.route ('/messages/<int:message_id>/like', methods=['POST'])
+def add_like(message_id):
+    """Toggle a liked message for the currently-logged-in user."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+
+    liked_message = Message.query.get_or_404(message_id)
+    #user cannot like their own message
+    if liked_message.user_id == g.user.id:
+        return abort(403)
+
+    user_likes = g.user.likes
+
+    if liked_message in user_likes:
+        g.user.likes = [like for like in user_likes if like != liked_message]
+    else:
+        g.user.likes.append(liked_message)
+
+    db.session.commit()
+
+    return redirect("/")
+   
+
+
 
 
 @app.route('/messages/<int:message_id>/delete', methods=["POST"])
